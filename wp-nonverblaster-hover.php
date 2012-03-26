@@ -102,11 +102,12 @@ class WPNonverBlasterHover {
 			"controls" => "controls",
 			"loop" => "",
 		), $atts));
+		$width = $this->options->audio_width . (substr($this->options->audio_width, -1) == "%" ? "" : "px");
 		return "<audio src=\"$src\"" .
 			($autoplay ? " autoplay=\"autoplay\" " : "") .
 			($controls ? " controls=\"controls\" " : "") .
 			($loop ? " loop=\"loop\" " : "") .
-			" class=\"nonverblaster nonverblaster-audio\" title=\"$title\" id=\"nonverblaster_".md5(time().$src)."\"></audio>";
+			" class=\"nonverblaster nonverblaster-audio\" style=\"width:$width\" title=\"$title\" id=\"nonverblaster_".md5(time().$src)."\"></audio>";
 	}
 	
 	public function videoplayer_shortcode_func ($atts) {
