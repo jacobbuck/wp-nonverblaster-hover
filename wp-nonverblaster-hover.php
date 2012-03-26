@@ -5,12 +5,23 @@ PluginURI: https://github.com/jacobbuck/wp-nonverblaster-hover
 Description: Play video and audio files using the NonverBlaster:hover flash player, or HTML5 fallback for mobile.
 Author: Jacob Buck
 Author URI: http://jacobbuck.co.nz/
-Version: 1.0
+Version: 1.1
 */
 
 class WPNonverBlasterHover {
 	
 	public $options;
+	private $default_options = array(
+		"player_back_color" => "#3fd2a3",
+		"control_color" => "#000000",
+		"control_back_color" => "#3fd2a3",
+		"audio_width" => "230",
+		"video_width" => "",
+		"video_height" => "",
+		"video_crop" => false,
+		"video_default_hd" => false
+	);
+	private $version = "1.1";
 	
 	public function __construct () {
 		$this->options = json_decode(get_option("wpnbh_options"));
@@ -33,26 +44,17 @@ class WPNonverBlasterHover {
 	/* Install */
 	
 	public function install () {
-		add_option("wpnbh_options", json_encode(array(
-			"player_back_color" => "#3fd2a3",
-			"control_color" => "#000000",
-			"control_back_color" => "#3fd2a3",
-			"audio_width" => "230",
-			"video_width" => "",
-			"video_height" => "",
-			"video_crop" => false,
-			"video_default_hd" => false
-		)));
+		add_option("wpnbh_options", json_encode($default_options));
 	}
 	
 	/* Plugin Scripts & Styles */
 		
 	public function init () {
 		// Frontend
-		wp_register_script("wp-nonverblaster-hover", plugins_url("/js/scripts.min.js", __FILE__), array("swfobject"), "1");
+		wp_register_script("wp-nonverblaster-hover", plugins_url("/js/scripts.min.js", __FILE__), array("swfobject"), $this->version);
 		// Settings page
-		wp_register_script("wp-nonverblaster-hover-options", plugins_url("/js/options.min.js", __FILE__), array("jquery"), "1");
-		wp_register_style("wp-nonverblaster-hover-options", plugins_url("/css/options.min.css", __FILE__), false, "1", "screen");
+		wp_register_script("wp-nonverblaster-hover-options", plugins_url("/js/options.min.js", __FILE__), array("jquery"), $this->version);
+		wp_register_style("wp-nonverblaster-hover-options", plugins_url("/css/options.min.css", __FILE__), false, $this->version, "screen");
 		
 	}
 	
@@ -118,7 +120,7 @@ class WPNonverBlasterHover {
 			"controls" => "controls",
 			"loop" => "",
 			"width" => $this->options->video_width ? $this->options->video_width : $wp_embed_defaults["width"],
-			"height" => $this->options->video_height ? $this->options->video_height :  $wp_embed_defaults["width"] * .5625 /* 16:9 */
+			"height" => $this->options->video_height ? $this->options->video_height : round($wp_embed_defaults["width"] * .5625) /* 16:9 */
 		), $atts));
 		return "<video src=\"$src\"" .
 			($hdsrc ? " data-hdsrc=\"$hdsrc\" " : "") .
@@ -134,7 +136,23 @@ class WPNonverBlasterHover {
 	public function admin_init () {
 		if (! wp_verify_nonce($_POST["wpnbh_nonce"], plugin_basename( __FILE__ ))) 
 			return false;
-		update_option("wpnbh_options", json_encode($_POST["wpnbh"]));
+		$posted = $_POST["wpnbh"];
+		/* Filter Hex Colors */
+		foreach (array("player_back_color", "control_color", "control_back_color") as $name) {
+			$posted[$name] = preg_filter('/(^#[a-fA-F0-9]{6})/', '$1', $posted[$name]);
+			$posted[$name] = $posted[$name] ? strtolower($posted[$name]) : $this->default_options[$name];
+		}
+		/* Filter Sizes */
+		foreach (array("audio_width", "video_width", "video_height") as $name) {
+			$posted[$name] = preg_filter('/(^[0-9]+%?)/', '$1', $posted[$name]);
+			$posted[$name] = $posted[$name] ? strtolower($posted[$name]) : $this->default_options[$name];
+		}
+		/* Filter Checkboxes */
+		foreach (array("video_crop", "video_default_hd") as $name) {
+			$posted[$name] = !! $posted[$name];
+		}
+		/* Update Option */
+		update_option("wpnbh_options", json_encode($posted));
 		wp_redirect(admin_url("/options-general.php?page=options-wpnbh&settings-updated=true"));
 	}
 	
@@ -178,21 +196,21 @@ class WPNonverBlasterHover {
 						<tr valign="top">
 							<th scope="row">Background color</th>
 							<td><fieldset><legend class="screen-reader-text"><span>Default audio size</span></legend>
-							<input name="wpnbh[player_back_color]" type="text" id="wpnbh_player_back_color" value="<?php echo $this->options->player_back_color ? $this->options->player_back_color : "#3fd2a3"; ?>" class="small-text color">
+							<input name="wpnbh[player_back_color]" type="text" id="wpnbh_player_back_color" value="<?php echo $this->options->player_back_color; ?>" class="small-text color">
 							<div class="colorpicker" id="wpnbh_player_back_color-farbtastic"></div>
 							</fieldset></td>
 						</tr>
 						<tr valign="top">
 							<th scope="row">Control color</th>
 							<td><fieldset><legend class="screen-reader-text"><span>Default audio size</span></legend>
-							<input name="wpnbh[control_color]" type="text" id="wpnbh_control_color" value="<?php echo $this->options->control_color ? $this->options->control_color : "#000000"; ?>" class="small-text color">
+							<input name="wpnbh[control_color]" type="text" id="wpnbh_control_color" value="<?php echo $this->options->control_color; ?>" class="small-text color">
 							<div class="colorpicker" id="wpnbh_control_color-farbtastic"></div>
 							</fieldset></td>
 						</tr>
 						<tr valign="top">
 							<th scope="row">Control back colour</th>
 							<td><fieldset><legend class="screen-reader-text"><span>Default audio size</span></legend>
-							<input name="wpnbh[control_back_color]" type="text" id="wpnbh_control_back_color" value="<?php echo $this->options->control_back_color ? $this->options->control_back_color : "#000000"; ?>" class="small-text color">
+							<input name="wpnbh[control_back_color]" type="text" id="wpnbh_control_back_color" value="<?php echo $this->options->control_back_color; ?>" class="small-text color">
 							<div class="colorpicker" id="wpnbh_control_back_color-farbtastic"></div>
 							</fieldset></td>
 						</tr>
@@ -206,7 +224,7 @@ class WPNonverBlasterHover {
 							<th scope="row">Audio player size</th>
 							<td><fieldset><legend class="screen-reader-text"><span>Audio player size</span></legend>
 							<label for="wpnbh_audio_width">Width</label>
-							<input name="wpnbh[audio_width]" type="text" id="wpnbh_audio_width" value="<?php echo $this->options->audio_width ? $this->options->audio_width : "230"; ?>" class="small-text">
+							<input name="wpnbh[audio_width]" type="text" id="wpnbh_audio_width" value="<?php echo $this->options->audio_width; ?>" class="small-text">
 							</fieldset></td>
 						</tr>
 						<tr valign="top">
@@ -235,8 +253,7 @@ class WPNonverBlasterHover {
 					</tbody>
 				</table>
 						
-			
-			<p class="submit"><input type="submit" name="submit" id="submit" class="button-primary" value="Save Changes"></p>
+				<p class="submit"><input type="submit" name="submit" id="submit" class="button-primary" value="Save Changes"></p>
 			</form>
 		</div>
 		<?php
