@@ -5,14 +5,14 @@ PluginURI: https://github.com/jacobbuck/wp-nonverblaster-hover
 Description: Play video and audio files using the NonverBlaster:hover flash player, or HTML5 fallback for mobile.
 Author: Jacob Buck
 Author URI: http://jacobbuck.co.nz/
-Version: 1.1.1
+Version: 1.1.2
 */
 
 class WPNonverBlasterHover {
 	
 	public $options;
 	private $default_options = array(
-		"player_back_color" => "#3fd2a3",
+		"player_back_color" => "#000000",
 		"control_color" => "#000000",
 		"control_back_color" => "#3fd2a3",
 		"audio_width" => "230",
@@ -20,7 +20,7 @@ class WPNonverBlasterHover {
 		"video_height" => "",
 		"video_crop" => false,
 		"video_default_hd" => false	);
-	private $version = "1.1.1";
+	private $version = "1.1.2";
 	
 	public function __construct () {
 		$this->options = json_decode(get_option("wpnbh_options"));
@@ -106,7 +106,7 @@ class WPNonverBlasterHover {
 			($autoplay ? " autoplay=\"autoplay\" " : "") .
 			($controls ? " controls=\"controls\" " : "") .
 			($loop ? " loop=\"loop\" " : "") .
-			" class=\"nonverblaster nonverblaster-audio\" style=\"width:$width\" title=\"$title\" id=\"nonverblaster_".md5(time().$src)."\"></audio>";
+			" class=\"nonverblaster nonverblaster-audio\" style=\"width:$width\" title=\"$title\" id=\"nonverblaster_".md5(time().$src)."\"><a href=\"http://get.adobe.com/flashplayer\" target=\"_blank\">Adobe Flash Player</a> is required to listen to audio.</audio>";
 	}
 	
 	public function videoplayer_shortcode_func ($atts) {
@@ -128,7 +128,7 @@ class WPNonverBlasterHover {
 			($controls ? " controls=\"controls\" " : "") .
 			($loop ? " loop=\"loop\" " : "") .
 			($poster ? " poster=\"$poster\" " : "") .
-			" width=\"$width\" height=\"$height\" class=\"nonverblaster nonverblaster-video\" title=\"$title\" id=\"nonverblaster_".md5(time().$src)."\"></video>";
+			" width=\"$width\" height=\"$height\" class=\"nonverblaster nonverblaster-video\" title=\"$title\" id=\"nonverblaster_".md5(time().$src)."\"><a href=\"http://get.adobe.com/flashplayer\" target=\"_blank\">Adobe Flash Player</a> is required to watch video.</video>";
 	}
 	
 	/* Plugin Options Page */
