@@ -1,4 +1,4 @@
-! function (swfobject, window, document) {
+! function (swfobject, options, window, document) {
 	
 	if (swfobject.hasFlashPlayerVersion("9")) {
 		
@@ -15,22 +15,22 @@
 					is_audio = this.tagName.toLowerCase() == "audio",
 					flashvars = {
 						mediaURL : props.src,
-						allowSmoothing : "true",
+						allowSmoothing : true,
 						autoPlay : !! props.autoplay,
 						buffer : 6,
 						showTimecode : ! is_audio,
 						loop : !! props.loop,
-						controlColor : wpnbh.options.control_color.replace("#", "0x"),
-						controlBackColor : wpnbh.options.control_back_color.replace("#", "0x"),
-						crop : wpnbh.options.video_crop,
+						controlColor : options.control_color.replace("#", "0x"),
+						controlBackColor : options.control_back_color.replace("#", "0x"),
+						crop : options.video_crop,
 						defaultVolume : 100,
-						playerBackColor : is_audio ? wpnbh.options.control_back_color.replace("#", "0x") : wpnbh.options.player_back_color.replace("#", "0x"),
+						playerBackColor : options[is_audio ? "control_back_color" : "player_back_color"].replace("#", "0x"),
 						treatAsAudio : is_audio,
 						controlsEnabled : !! props.controls
 					},
 					params = {
-						menu : "false",
-						allowFullScreen : is_audio ? "false" : "true",
+						menu : false,
+						allowFullScreen : ! is_audio,
 						allowScriptAccess : "always",
 						wmode : "transparent"
 					},
@@ -41,16 +41,15 @@
 				
 				if (!! props.hdsrc) {
 					flashvars.hdURL = props.hdsrc;
-					flashvars.defaultHD = wpnbh.options.video_default_hd;
+					flashvars.defaultHD = !! options.video_default_hd;
 				}
-				if (!! props.poster) {
+				if (!! props.poster)
 					flashvars.teaserURL = props.poster;
-				}
 				
 				return swfobject.embedSWF(
 					nonverblaster_swf,
 					this.id, 
-					is_audio ? wpnbh.options.audio_width : props.width, 
+					is_audio ? options.audio_width : props.width, 
 					is_audio ? "17" : props.height, 
 					"9", 
 					expressinstall_swf, 
@@ -75,4 +74,4 @@
 		
 	}
 	
-} (swfobject, window, document);
+} (swfobject, wpnbh.options, window, document);
