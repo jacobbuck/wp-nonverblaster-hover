@@ -1,8 +1,61 @@
 /*!
   * domready (c) Dustin Diaz 2012 - License MIT
   */
-!function(a,b){typeof module!="undefined"?module.exports=b():typeof define=="function"&&typeof define.amd=="object"?define(b):this[a]=b()}("domready",function(a){function m(a){l=1;while(a=b.shift())a()}var b=[],c,d=!1,e=document,f=e.documentElement,g=f.doScroll,h="DOMContentLoaded",i="addEventListener",j="onreadystatechange",k="readyState",l=/^loade|c/.test(e[k]);return e[i]&&e[i](h,c=function(){e.removeEventListener(h,c,d),m()},d),g&&e.attachEvent(j,c=function(){/^c/.test(e[k])&&(e.detachEvent(j,c),m())}),a=g?function(c){self!=top?l?c():b.push(c):function(){try{f.doScroll("left")}catch(b){return setTimeout(function(){a(c)},50)}c()}()}:function(a){l?a():b.push(a)}})
+!function (name, definition) {
+  if (typeof module != 'undefined') module.exports = definition()
+  else if (typeof define == 'function' && typeof define.amd == 'object') define(definition)
+  else this[name] = definition()
+}('domready', function (ready) {
 
+  var fns = [], fn, f = false
+    , doc = document
+    , testEl = doc.documentElement
+    , hack = testEl.doScroll
+    , domContentLoaded = 'DOMContentLoaded'
+    , addEventListener = 'addEventListener'
+    , onreadystatechange = 'onreadystatechange'
+    , readyState = 'readyState'
+    , loaded = /^loade|c/.test(doc[readyState])
+
+  function flush(f) {
+    loaded = 1
+    while (f = fns.shift()) f()
+  }
+
+  doc[addEventListener] && doc[addEventListener](domContentLoaded, fn = function () {
+    doc.removeEventListener(domContentLoaded, fn, f)
+    flush()
+  }, f)
+
+
+  hack && doc.attachEvent(onreadystatechange, fn = function () {
+    if (/^c/.test(doc[readyState])) {
+      doc.detachEvent(onreadystatechange, fn)
+      flush()
+    }
+  })
+
+  return (ready = hack ?
+    function (fn) {
+      self != top ?
+        loaded ? fn() : fns.push(fn) :
+        function () {
+          try {
+            testEl.doScroll('left')
+          } catch (e) {
+            return setTimeout(function() { ready(fn) }, 50)
+          }
+          fn()
+        }()
+    } :
+    function (fn) {
+      loaded ? fn() : fns.push(fn)
+    })
+})
+
+/*!
+  * NonvernBlaster:hover loader (c) Jacob Buck 2012 - License MIT
+  */
 
 ! function (swfobject, window, document) {
 	
@@ -27,10 +80,10 @@
 						showTimecode : ! is_audio,
 						loop : !! props.loop,
 						controlColor : wpnbh.options.control_color.replace("#", "0x"),
-						controlBackColor : wpnbh.options.player_back_color.replace("#", "0x"),
+						controlBackColor : wpnbh.options.control_back_color.replace("#", "0x"),
 						crop : wpnbh.options.video_crop,
 						defaultVolume : 100,
-						playerBackColor : wpnbh.options.player_back_color.replace("#", "0x"),
+						playerBackColor : is_audio ? wpnbh.options.control_back_color.replace("#", "0x") : wpnbh.options.player_back_color.replace("#", "0x"),
 						treatAsAudio : is_audio,
 						controlsEnabled : !! props.controls
 					},
@@ -53,7 +106,7 @@
 					flashvars.teaserURL = props.poster;
 				}
 				
-				swfobject.embedSWF(
+				return swfobject.embedSWF(
 					nonverblaster_swf,
 					this.id, 
 					is_audio ? wpnbh.options.audio_width : props.width, 
@@ -64,20 +117,19 @@
 					params, 
 					attributes
 				);
-								
 			};
 		
 		domready(function () {
 			var audios = document.getElementsByTagName("audio"),
 				videos = document.getElementsByTagName("video");
 			
-			for (var i = 0; i < audios.length; i++)
-				if (audios[i].className.indexOf("nonverblaster") > -1) 
+			for (var i = audios.length - 1; i > -1; i--)
+				if ((" "+audios[i].className+" ").indexOf("nonverblaster") > -1)
 					embedflash.apply(audios[i]);
-			
-			for (var i = 0; i < videos.length; i++) 
-				if (videos[i].className.indexOf("nonverblaster") > -1) 
+			for (var i = videos.length - 1; i > -1; i--) 
+				if ((" "+videos[i].className+" ").indexOf("nonverblaster") > -1)
 					embedflash.apply(videos[i]);
+			
 		});
 		
 	}

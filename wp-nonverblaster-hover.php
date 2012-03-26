@@ -1,6 +1,7 @@
 <?php
 /*
 Plugin Name: NonverBlaster:hover
+PluginURI: https://github.com/jacobbuck/wp-nonverblaster-hover
 Description: Play video and audio files using the NonverBlaster:hover flash player, or HTML5 fallback for mobile.
 Author: Jacob Buck
 Author URI: http://jacobbuck.co.nz/
@@ -36,7 +37,7 @@ class WPNonverBlasterHover {
 			"player_back_color" => "#3fd2a3",
 			"control_color" => "#000000",
 			"control_back_color" => "#3fd2a3",
-			"audio_width" => "",
+			"audio_width" => "230",
 			"video_width" => "",
 			"video_height" => "",
 			"video_crop" => false,
@@ -48,10 +49,10 @@ class WPNonverBlasterHover {
 		
 	public function init () {
 		// Frontend
-		wp_register_script("wp-nonverblaster-hover", plugins_url("/js/scripts.js", __FILE__), array("swfobject"), "1", true);
+		wp_register_script("wp-nonverblaster-hover", plugins_url("/js/scripts.min.js", __FILE__), array("swfobject"), "1");
 		// Settings page
-		wp_register_script("wp-nonverblaster-hover-options", plugins_url("/js/options.js", __FILE__), array("jquery"), "1", false);
-		wp_register_style("wp-nonverblaster-hover-options", plugins_url("/css/options.css", __FILE__), false, "1", "screen");
+		wp_register_script("wp-nonverblaster-hover-options", plugins_url("/js/options.min.js", __FILE__), array("jquery"), "1");
+		wp_register_style("wp-nonverblaster-hover-options", plugins_url("/css/options.min.css", __FILE__), false, "1", "screen");
 		
 	}
 	
