@@ -1,10 +1,7 @@
-! function (swfobject, options, window, document) {
+! function (document, window, swfobject, options, swf_url) {
 	
 	if (swfobject.hasFlashPlayerVersion("9")) {
-		
-		var nonverblaster_swf = wpnbh.plugins_url +  "/swf/NonverBlaster.swf",
-			expressinstall_swf = wpnbh.plugins_url +  "/swf/expressinstall.swf",
-			
+					
 			embedflash = function () {
 				var props = function (x) {
 						var y = {};
@@ -47,12 +44,12 @@
 					flashvars.teaserURL = props.poster;
 				
 				return swfobject.embedSWF(
-					nonverblaster_swf,
+					swf_url + "NonverBlaster.swf",
 					this.id, 
 					is_audio ? options.audio_width : props.width, 
 					is_audio ? "17" : props.height, 
 					"9", 
-					expressinstall_swf, 
+					swf_url + "expressinstall.swf", 
 					flashvars, 
 					params, 
 					attributes
@@ -61,17 +58,20 @@
 		
 		swfobject.addDomLoadEvent(function () {
 			var audios = document.getElementsByTagName("audio"),
-				videos = document.getElementsByTagName("video");
+				videos = document.getElementsByTagName("video"),
+				all = [];
 			
-			for (var i = audios.length - 1; i > -1; i--)
-				if ((" "+audios[i].className+" ").indexOf("nonverblaster") > -1)
-					embedflash.apply(audios[i]);
-			for (var i = videos.length - 1; i > -1; i--) 
-				if ((" "+videos[i].className+" ").indexOf("nonverblaster") > -1)
-					embedflash.apply(videos[i]);
+			for (var i = 0; i < audios.length; i++) 
+				all.push(audios[i]);
+			for (var i = 0; i < videos.length; i++) 
+				all.push(videos[i]);
+				
+			for (var i = all.length - 1; i > -1; i--)
+				if ((" "+all[i].className+" ").indexOf(" nonverblaster ") > -1)
+					embedflash.apply(all[i]);
 			
 		});
 		
 	}
 	
-} (swfobject, wpnbh.options, window, document);
+} (document, window, swfobject, wpnbh.options, wpnbh.url);

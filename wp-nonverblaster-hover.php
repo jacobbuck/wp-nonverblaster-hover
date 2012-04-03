@@ -5,7 +5,7 @@ PluginURI: https://github.com/jacobbuck/wp-nonverblaster-hover
 Description: Play video and audio files using the NonverBlaster:hover flash player, or HTML5 fallback for mobile.
 Author: Jacob Buck
 Author URI: http://jacobbuck.co.nz/
-Version: 1.1.3
+Version: 1.1.4
 */
 
 class WPNonverBlasterHover {
@@ -20,7 +20,7 @@ class WPNonverBlasterHover {
 		"video_height" => "",
 		"video_crop" => false,
 		"video_default_hd" => false	);
-	private $version = "1.1.3";
+	private $version = "1.1.4";
 	
 	public function __construct () {
 		$this->options = json_decode(get_option("wpnbh_options"));
@@ -50,17 +50,17 @@ class WPNonverBlasterHover {
 		
 	public function init () {
 		// Frontend
-		wp_register_script("wp-nonverblaster-hover", plugins_url("/js/scripts.min.js", __FILE__), array("swfobject"), $this->version);
+		wp_register_script("wp-nonverblaster-hover", plugins_url("/assets/scripts.js", __FILE__), array("swfobject"), $this->version);
 		// Settings page
-		wp_register_script("wp-nonverblaster-hover-options", plugins_url("/js/options.min.js", __FILE__), array("jquery"), $this->version);
-		wp_register_style("wp-nonverblaster-hover-options", plugins_url("/css/options.min.css", __FILE__), false, $this->version, "screen");
+		wp_register_script("wp-nonverblaster-hover-options", plugins_url("/assets/options.js", __FILE__), array("jquery"), $this->version);
+		wp_register_style("wp-nonverblaster-hover-options", plugins_url("/assets/options.css", __FILE__), false, $this->version, "screen");
 		
 	}
 	
 	public function wp_enqueue_scripts () {
 		wp_enqueue_script("wp-nonverblaster-hover");
 		wp_localize_script("wp-nonverblaster-hover", "wpnbh", array(
-			"plugins_url" => plugins_url("", __FILE__),
+			"url" => plugins_url("/assets/", __FILE__),
 			"options" => $this->options
 		));
 	}

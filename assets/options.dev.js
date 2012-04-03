@@ -15,5 +15,4 @@ jQuery(function ($) {
 		$(".colorpicker").hide();
 	});
 	
-	
 });
