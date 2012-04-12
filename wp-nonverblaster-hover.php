@@ -5,7 +5,7 @@ PluginURI: https://github.com/jacobbuck/wp-nonverblaster-hover
 Description: Play video and audio files using the NonverBlaster:hover flash player, or HTML5 fallback for mobile.
 Author: Jacob Buck
 Author URI: http://jacobbuck.co.nz/
-Version: 1.1.4
+Version: 1.1.5
 */
 
 class WPNonverBlasterHover {
@@ -43,7 +43,13 @@ class WPNonverBlasterHover {
 	/* Install */
 	
 	public function install () {
-		add_option("wpnbh_options", json_encode($default_options));
+		add_option("wpnbh_options", json_encode($this->default_options));
+	}
+	
+	/* Uninstall */
+	
+	public function uninstall () {
+		delete_option("wpnbh_options");
 	}
 	
 	/* Plugin Scripts & Styles */
@@ -139,12 +145,12 @@ class WPNonverBlasterHover {
 		$posted = $_POST["wpnbh"];
 		/* Filter Hex Colors */
 		foreach (array("player_back_color", "control_color", "control_back_color") as $name) {
-			$posted[$name] = preg_filter('/(^#[a-fA-F0-9]{6})/', '$1', $posted[$name]);
+			$posted[$name] = preg_replace('/(^#[a-fA-F0-9]{6})/', '$1', $posted[$name]);
 			$posted[$name] = $posted[$name] ? strtolower($posted[$name]) : $this->default_options[$name];
 		}
 		/* Filter Sizes */
 		foreach (array("audio_width", "video_width", "video_height") as $name) {
-			$posted[$name] = preg_filter('/(^[0-9]+%?)/', '$1', $posted[$name]);
+			$posted[$name] = preg_replace('/(^[0-9]+%?)/', '$1', $posted[$name]);
 			$posted[$name] = $posted[$name] ? strtolower($posted[$name]) : $this->default_options[$name];
 		}
 		/* Filter Checkboxes */
@@ -264,3 +270,4 @@ class WPNonverBlasterHover {
 $wpnbh = new WPNonverBlasterHover;
 
 register_activation_hook(__FILE__, array($wpnbh, "install"));
+register_deactivation_hook(__FILE__, array($wpnbh, "uninstall"));
