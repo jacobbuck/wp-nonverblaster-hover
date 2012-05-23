@@ -5,7 +5,7 @@ PluginURI: https://github.com/jacobbuck/wp-nonverblaster-hover
 Description: Play video and audio files using the NonverBlaster:hover flash player, or HTML5 fallback for mobile.
 Author: Jacob Buck
 Author URI: http://jacobbuck.co.nz/
-Version: 1.1.5
+Version: 1.1.6
 */
 
 class WPNonverBlasterHover {
@@ -55,12 +55,8 @@ class WPNonverBlasterHover {
 	/* Plugin Scripts & Styles */
 		
 	public function init () {
-		// Frontend
-		wp_register_script("wp-nonverblaster-hover", plugins_url("/assets/scripts.js", __FILE__), array("swfobject"), $this->version);
-		// Settings page
-		wp_register_script("wp-nonverblaster-hover-options", plugins_url("/assets/options.js", __FILE__), array("jquery"), $this->version);
-		wp_register_style("wp-nonverblaster-hover-options", plugins_url("/assets/options.css", __FILE__), false, $this->version, "screen");
-		
+		// Front end
+		wp_register_script("wp-nonverblaster-hover", plugins_url("/assets/wp-nonverblaster-hover.js", __FILE__), array("swfobject"), $this->version);
 	}
 	
 	public function wp_enqueue_scripts () {
@@ -171,8 +167,6 @@ class WPNonverBlasterHover {
 			return;	
 		wp_enqueue_style("farbtastic");
 		wp_enqueue_script("farbtastic");
-		wp_enqueue_style("wp-nonverblaster-hover-options");
-		wp_enqueue_script("wp-nonverblaster-hover-options");
 	}
 	
 	public function add_settings_link ($links, $file) {
@@ -183,6 +177,11 @@ class WPNonverBlasterHover {
 	
 	public function plugin_options () {
 		?>
+		<style media="screen">
+			td {position: relative;}
+			input.color {width: 65px;}
+			.colorpicker {display: none; position: absolute; top: 8px; left: 100px; background: white; border: 1px solid #BBB; padding: 3px; border-radius: 3px; z-index: 100;}
+		</style>
 		<div class="wrap options-wpnbh">
 			<div id="icon-options-general" class="icon32"><br></div>
 			<h2>NonvernBlaster<span style="font-style:italic;font-weight:lighter">:hover</span> Settings</h2>
@@ -262,6 +261,24 @@ class WPNonverBlasterHover {
 				<p class="submit"><input type="submit" name="submit" id="submit" class="button-primary" value="Save Changes"></p>
 			</form>
 		</div>
+		<script>
+		jQuery(function ($) {
+			$("input.color").each(function () {
+				var $input = $(this),
+					$picker = $(".colorpicker:first", $(this).parent());
+				$picker.farbtastic($input).click(function (event) {
+					event.stopPropagation();
+				});
+				$input.click(function (event) {
+					event.stopPropagation();
+					$(".colorpicker").not($picker.show()).hide();
+				});
+			});
+			$("#wpwrap").click(function () {
+				$(".colorpicker").hide();
+			});
+		});
+		</script>
 		<?php
 	}
 	
