@@ -1,4 +1,4 @@
-(function (document, swfobject, options, swf_url) {
+(function (document, swfobject, options, assets_url) {
 	
 	window.embednonverblasterhover = function () {
 		if (! swfobject.hasFlashPlayerVersion("9")) 
@@ -44,12 +44,12 @@
 			flashvars.teaserURL = props.poster;
 		
 		return swfobject.embedSWF(
-			swf_url + "NonverBlaster.swf",
+			assets_url + "NonverBlaster.swf",
 			this.id, 
 			is_audio ? options.audio_width : props.width, 
 			is_audio ? "17" : props.height, 
 			"9", 
-			swf_url + "expressinstall.swf", 
+			assets_url + "expressinstall.swf", 
 			flashvars, 
 			params, 
 			attributes
@@ -71,4 +71,4 @@
 				embednonverblasterhover.apply(all[i]);
 	});
 			
-} (document, swfobject, wpnbh.options, wpnbh.url));
+} (document, swfobject, wpnbh.options, wpnbh.assets_url));
