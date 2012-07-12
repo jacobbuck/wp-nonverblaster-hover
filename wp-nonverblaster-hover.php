@@ -5,14 +5,13 @@ PluginURI: https://github.com/jacobbuck/wp-nonverblaster-hover
 Description: Play video and audio files using the NonverBlaster:hover flash player, or HTML5 fallback for mobile.
 Author: Jacob Buck
 Author URI: http://jacobbuck.co.nz/
-Version: 1.2
+Version: 1.3
 */
 
 class WPNonverBlasterHover {
 	
 	public $options;
 	private $default_options = array(
-		"player_back_color" => "#000000",
 		"control_color" => "#000000",
 		"control_back_color" => "#3fd2a3",
 		"audio_width" => "230",
@@ -22,13 +21,12 @@ class WPNonverBlasterHover {
 		"video_default_hd" => false	);
 	private $fallback_width;
 	private $fallback_height;
-	private $version = "1.2";
+	private $version = "1.3";
 	
 	public function __construct () {
 		$this->activate();
 		// Actions
 		add_action("init", array($this, "init"));
-		add_action("wp_enqueue_scripts", array($this, "wp_enqueue_scripts"));
 		add_action("admin_init", array($this, "admin_init"));
 		add_action("admin_enqueue_scripts", array($this, "admin_enqueue_scripts"));
 		add_action("admin_menu", array($this, "admin_menu"));
@@ -60,22 +58,12 @@ class WPNonverBlasterHover {
 	/* Plugin Scripts & Styles */
 		
 	public function init () {
-		// Front end
-		wp_register_script("wp-nonverblaster-hover", plugins_url("/assets/wp-nonverblaster-hover.js", __FILE__), array("swfobject"), $this->version);
 		// Get default sizes
 		$wp_embed_defaults = wp_embed_defaults();
 		$this->fallback_width = empty($this->options["video_width"]) ? $wp_embed_defaults["width"] : $this->options["video_width"];
 		$this->fallback_height = empty($this->options["video_height"]) ? round($this->fallback_width * .5625) : $this->options["video_height"];
 	}
-	
-	public function wp_enqueue_scripts () {
-		wp_enqueue_script("wp-nonverblaster-hover");
-		wp_localize_script("wp-nonverblaster-hover", "wpnbh", array(
-			"assets_url" => plugins_url("/assets/", __FILE__),
-			"options" => $this->options
-		));
-	}
-	
+		
 	/* Insert shortcode in media library */
 	
 	public function insert_shortcode_button_field ($form_fields, $attachment) {
@@ -119,40 +107,83 @@ class WPNonverBlasterHover {
 	/* Shortcode Functions */
 	
 	public function audio_shortcode_func ($atts) {
+		$player_swf = plugins_url("NonverBlaster.swf", __FILE__);
+		
 		extract(shortcode_atts(array(
 			"src" => "",
 			"title" => "",
-			"autoplay" => "",
-			"controls" => "controls",
-			"loop" => "",
+			"autoplay" => false,
+			"loop" => false,
+			"width" => $this->options["audio_width"]
 		), $atts));
-		$width = $this->options["audio_width"] . (substr($this->options["audio_width"], -1) == "%" ? "" : "px");
-		return "<audio src=\"$src\"" .
-			($autoplay ? " autoplay=\"autoplay\" " : "") .
-			($controls ? " controls=\"controls\" " : "") .
-			($loop ? " loop=\"loop\" " : "") .
-			" class=\"nonverblaster nonverblaster-audio\" preload=\"none\" style=\"width:$width\" title=\"$title\" id=\"nonverblaster_".md5(time().$src)."\"><a href=\"http://get.adobe.com/flashplayer\" target=\"_blank\">Adobe Flash Player</a> is required to listen to audio.</audio>";
+		
+		$flashvars = array(
+			"mediaURL" => $src,
+			"autoPlay" => $autoplay,
+			"loop" => $loop,
+			"controlColor" => str_replace("#", "0x", $this->options["control_color"]),
+			"controlBackColor" => str_replace("#", "0x", $this->options["control_back_color"]),
+			"playerBackColor" => str_replace("#", "0x", $this->options["control_back_color"]),
+			"defaultVolume" => 100,
+			"treatAsAudio" => true
+		);
+		
+		$output  = "<object type=\"application/x-shockwave-flash\" data=\"$player_swf\" width=\"$width\" height=\"17\" class=\"nonverblaster nonverblaster-audio\">";
+		$output .= "<param name=\"movie\" value=\"$player_swf\" /><param name=\"menu\" value=\"false\" /><param name=\"wmode\" value=\"transparent\" />";
+		$output .= "<param name=\"allowfullscreen\" value=\"false\" /><param name=\"allowscriptaccess\" value=\"always\" />";
+		$output .= "<param name=\"flashvars\" value=\"" . $this->array_to_flashvars($flashvars) . "\" />";
+		$output .= "<audio src=\"$src\" preload=\"none\" title=\"$title\" style=\"width:" . $width . (substr($this->options["audio_width"], -1) == "%" ? "" : "px") . "\"";
+		$output .= ($autoplay ? " autoplay" : "") . ($loop ? " loop" : "") . ">";
+		$output .= "<p>To listen to this you'll need the latest <a href=\"http://get.adobe.com/flashplayer\" target=\"_blank\">Adobe Flash Player</a>, or a browser with HTML5 video support.</p>";
+		$output .= "</audio></object>";
+		
+		return $output;
 	}
 	
 	public function video_shortcode_func ($atts) {
+		$player_swf = plugins_url("NonverBlaster.swf", __FILE__);
+		
 		extract(shortcode_atts(array(
 			"src" => "",
 			"hdsrc" => "",
 			"title" => "",
 			"poster" => "",
-			"autoplay" => "",
-			"controls" => "controls",
-			"loop" => "",
+			"autoplay" => false,
+			"loop" => false,
 			"width" => $this->fallback_width,
 			"height" => $this->fallback_height
 		), $atts));
-		return "<video src=\"$src\"" .
-			($hdsrc ? " data-hdsrc=\"$hdsrc\" " : "") .
-			($autoplay ? " autoplay=\"autoplay\" " : "") .
-			($controls ? " controls=\"controls\" " : "") .
-			($loop ? " loop=\"loop\" " : "") .
-			($poster ? " poster=\"$poster\" " : "") .
-			" width=\"$width\" height=\"$height\" preload=\"none\" class=\"nonverblaster nonverblaster-video\" title=\"$title\" id=\"nonverblaster_".md5(microtime().$src)."\"><a href=\"http://get.adobe.com/flashplayer\" target=\"_blank\">Adobe Flash Player</a> is required to watch video.</video>";
+		
+		$flashvars = array(
+			"mediaURL" => $src,
+			"showTimecode" => true,
+			"autoPlay" => $autoplay,
+			"loop" => $loop,
+			"controlColor" => str_replace("#", "0x", $this->options["control_color"]),
+			"controlBackColor" => str_replace("#", "0x", $this->options["control_back_color"]),
+			"playerBackColor" => "0x000000",
+			"crop" => $this->options["video_crop"],
+			"defaultVolume" => 100,
+			"allowSmoothing" => true
+		);
+		if (! empty($hdsrc)) {
+			$flashvars["hdURL"] = $hdsrc;
+			$flashvars["defaultHD"] = $this->options["video_default_hd"];
+		}
+		if (! empty($poster)) {
+			$flashvars["teaserURL"] = $poster;
+		}
+		
+		$output  = "<object type=\"application/x-shockwave-flash\" data=\"$player_swf\" width=\"$width\" height=\"$height\" class=\"nonverblaster nonverblaster-video\">";
+		$output .= "<param name=\"movie\" value=\"$player_swf\" /><param name=\"menu\" value=\"false\" /><param name=\"wmode\" value=\"transparent\" />";
+		$output .= "<param name=\"allowfullscreen\" value=\"true\" /><param name=\"allowscriptaccess\" value=\"always\" />";
+		$output .= "<param name=\"flashvars\" value=\"" . $this->array_to_flashvars($flashvars) . "\" />";
+		$output .= "<video src=\"$src\" width=\"$width\" height=\"$height\" title=\"$title\" preload=\"none\" controls";
+		$output .= ($autoplay ? " autoplay" : "" ) . ($loop ? " loop" : "") . ($poster ? " poster=\"$poster\"" : "") . ">";
+		$output .= "<p>To watch this you'll need the latest <a href=\"http://get.adobe.com/flashplayer\" target=\"_blank\">Adobe Flash Player</a>, or a browser with HTML5 video support.</p>";
+		$output .= "</video></object>";
+		
+		return $output;
 	}
 	
 	/* Plugin Options Page */
@@ -162,7 +193,7 @@ class WPNonverBlasterHover {
 			return;
 		$posted = $_POST["wpnbh"];
 		/* Filter Hex Colors */
-		foreach (array("player_back_color", "control_color", "control_back_color") as $name)
+		foreach (array("control_color", "control_back_color") as $name)
 			$posted[$name] = strtolower(preg_replace('/(^#[a-fA-F0-9]{6})/', '$1', $posted[$name]));
 		/* Filter Sizes */
 		foreach (array("audio_width", "video_width", "video_height") as $name)
@@ -171,14 +202,14 @@ class WPNonverBlasterHover {
 		foreach (array("video_crop", "video_default_hd") as $name)
 			$posted[$name] = ! empty($posted[$name]);
 		/* Revert Empty Options To Default */
-		foreach (array("player_back_color", "control_color", "control_back_color", "audio_width", "video_width", "video_height") as $name)
+		foreach (array("control_color", "control_back_color", "audio_width", "video_width", "video_height") as $name)
 			$posted[$name] = empty($posted[$name]) ? $posted[$name] : $this->default_options[$name];
 		/* Update Option */
 		update_option("wpnbh_options", $posted);
 		wp_redirect(admin_url("options-general.php?page=wpnbh&settings-updated=true"));
 	}
 	
-	public function admin_menu() {
+	public function admin_menu () {
 		add_options_page("NonvernBlaster:hover Settings", "NonvernBlaster:hover", "manage_options", "wpnbh", array($this, "plugin_options"));
 	}
 	
@@ -213,13 +244,6 @@ class WPNonverBlasterHover {
 				<h3>Player colors</h3>
 				<table class="form-table">
 					<tbody>
-						<tr valign="top">
-							<th scope="row">Background color</th>
-							<td><fieldset><legend class="screen-reader-text"><span>Default audio size</span></legend>
-							<input name="wpnbh[player_back_color]" type="text" id="wpnbh_player_back_color" value="<?php echo $this->options["player_back_color"]; ?>" class="small-text color">
-							<div class="colorpicker" id="wpnbh_player_back_color-farbtastic"></div>
-							</fieldset></td>
-						</tr>
 						<tr valign="top">
 							<th scope="row">Control color</th>
 							<td><fieldset><legend class="screen-reader-text"><span>Default audio size</span></legend>
@@ -295,6 +319,13 @@ class WPNonverBlasterHover {
 		});
 		</script>
 		<?php
+	}
+	
+	private function array_to_flashvars ($old_array) {
+		$new_array = array();
+		foreach ($old_array as $key => $value)
+			array_push($new_array, $key."=".strval($value));
+		return htmlspecialchars(implode("&", $new_array));
 	}
 	
 }
