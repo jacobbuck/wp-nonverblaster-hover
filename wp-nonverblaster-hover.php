@@ -2,10 +2,10 @@
 /*
 Plugin Name: NonverBlaster:hover
 PluginURI: https://github.com/jacobbuck/wp-nonverblaster-hover
-Description: Play video and audio files using the NonverBlaster:hover flash player, or HTML5 fallback for mobile.
+Description: Play audio and video files using the NonverBlaster:hover flash player, or HTML5 audio/video fallback.
 Author: Jacob Buck
 Author URI: http://jacobbuck.co.nz/
-Version: 1.4
+Version: 1.4.1
 */
 
 class WPNonverBlasterHover {
@@ -21,9 +21,11 @@ class WPNonverBlasterHover {
 		"video_default_hd" => false	);
 	private $fallback_width;
 	private $fallback_height;
-	private $version = "1.4";
+	private $version = "1.4.1";
 	
+	/* Let's do this thang! */
 	public function __construct () {
+		
 		// Get pptions
 		$this->options = get_option("wpnbh_options");
 		if (empty($this->options) || ! is_array($this->options)) {
@@ -33,19 +35,23 @@ class WPNonverBlasterHover {
 			delete_option("wpnbh_options");
 			add_option("wpnbh_options", $this->options);
 		}
+		
 		// Actions
 		add_action("init", array($this, "init"));
 		add_action("admin_init", array($this, "admin_init"));
 		add_action("admin_enqueue_scripts", array($this, "admin_enqueue_scripts"));
 		add_action("admin_menu", array($this, "admin_menu"));
+		
 		// Filters
 		add_filter("attachment_fields_to_edit", array($this, "add_attachment_fields"), 10, 2);
 		add_filter("save_attachment_fields", array($this, "save_attachment_fields"), 10, 2);
 		add_filter("media_send_to_editor", array($this, "send_shortcode_to_editor"), 10, 3);
 		add_filter("plugin_action_links", array($this, "add_settings_link"), 10, 2);
+		
 		// Shortcodes
 		add_shortcode("audio", array($this, "audio_shortcode_func"));
 		add_shortcode("video", array($this, "video_shortcode_func"));
+		
 	}
 		
 	/* Init */
@@ -150,18 +156,21 @@ class WPNonverBlasterHover {
 		
 		extract(shortcode_atts(array(
 			"id" => 0,
+			"src" => "",
+			"title" => "",
 			"autoplay" => false,
 			"loop" => false,
 			"width" => $this->options["audio_width"]
 		), $atts));
-		
+				
 		$attachment = get_post($id);
 		
-		if (empty($id) || empty($attachment)) 
+		if (! empty($id) && ! empty($attachment)) {
+			$src = wp_get_attachment_url($attachment->ID);
+			$title = apply_filters("the_title", $attachment->post_title);
+		} else if (empty($src)) {
 			return;
-		
-		$src = wp_get_attachment_url($attachment->ID);
-		$title = apply_filters("the_title", $attachment->post_title);
+		}
 		
 		$flashvars = array(
 			"mediaurl" => $src,
@@ -194,6 +203,8 @@ class WPNonverBlasterHover {
 		
 		extract(shortcode_atts(array(
 			"id" => false,
+			"src" => "",
+			"title" => "",
 			"autoplay" => false,
 			"loop" => false,
 			"width" => $this->fallback_width,
@@ -202,13 +213,14 @@ class WPNonverBlasterHover {
 		
 		$attachment = get_post($id);
 		
-		if (empty($id) || empty($attachment)) 
+		if (! empty($id) && ! empty($attachment)) {
+			$src = wp_get_attachment_url($attachment->ID);
+			$title = apply_filters("the_title", $attachment->post_title);
+			$poster = get_post_meta($attachment->ID, "_wpnbh_poster", true);
+			$hd_src = get_post_meta($attachment->ID, "_wpnbh_hd", true);
+		} else if (empty($src)) {
 			return;
-				
-		$src = wp_get_attachment_url($attachment->ID);
-		$title = apply_filters("the_title", $attachment->post_title);
-		$poster = get_post_meta($attachment->ID, "_wpnbh_poster", true);
-		$hd_src = get_post_meta($attachment->ID, "_wpnbh_hd", true);
+		}
 				
 		$flashvars = array(
 			"mediaurl" => $src,
@@ -235,7 +247,7 @@ class WPNonverBlasterHover {
 		$output .= "<param name=\"allowfullscreen\" value=\"true\" /><param name=\"allowscriptaccess\" value=\"always\" />";
 		$output .= "<param name=\"flashvars\" value=\"" . $this->array_to_flashvars($flashvars) . "\" />";
 		$output .= "<video src=\"$src\" width=\"$width\" height=\"$height\" title=\"$title\" preload=\"none\" controls";
-		$output .= ($autoplay ? " autoplay" : "" ) . ($loop ? " loop" : "") . ($poster ? " poster=\"$poster\"" : "") . ">";
+		$output .= ($autoplay ? " autoplay" : "" ) . ($loop ? " loop" : "") . (! empty($poster) ? " poster=\"$poster\"" : "") . ">";
 		$output .= "<p>To watch this you'll need the latest <a href=\"http://get.adobe.com/flashplayer\" target=\"_blank\">Adobe Flash Player</a>, or a browser with HTML5 video support.</p>";
 		$output .= "</video></object>";
 		
