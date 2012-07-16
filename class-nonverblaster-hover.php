@@ -30,16 +30,16 @@ class NonverBlaster_Hover {
 		}
 		
 		// Actions
-		add_action( 'init', array( $this, 'init' ) );
-		add_action( 'admin_init', array( $this, 'admin_init' ) );
-		add_action( 'admin_enqueue_scripts', array( $this, 'admin_enqueue_scripts' ) );
-		add_action( 'admin_menu', array( $this, 'admin_menu' ) );
+		add_action( 'init', array( &$this, 'init' ) );
+		add_action( 'admin_init', array( &$this, 'admin_init' ) );
+		add_action( 'admin_enqueue_scripts', array( &$this, 'admin_enqueue_scripts' ) );
+		add_action( 'admin_menu', array( &$this, 'admin_menu' ) );
 		
 		// Filters
-		add_filter( 'attachment_fields_to_edit', array( $this, 'add_attachment_fields' ), 10, 2 );
-		add_filter( 'save_attachment_fields', array( $this, 'save_attachment_fields' ), 10, 2 );
-		add_filter( 'media_send_to_editor', array( $this, 'send_shortcode_to_editor' ), 10, 3 );
-		add_filter( 'plugin_action_links', array( $this, 'add_settings_link' ), 10, 2 );
+		add_filter( 'attachment_fields_to_edit', array( &$this, 'add_attachment_fields' ), 10, 2 );
+		add_filter( 'save_attachment_fields', array( &$this, 'save_attachment_fields' ), 10, 2 );
+		add_filter( 'media_send_to_editor', array( &$this, 'send_shortcode_to_editor' ), 10, 3 );
+		add_filter( 'plugin_action_links', array( &$this, 'add_settings_link' ), 10, 2 );
 		
 		// Shortcodes
 		add_shortcode( 'audio', array( &$this, 'audio_shortcode_func' ) );
@@ -282,7 +282,7 @@ class NonverBlaster_Hover {
 	}
 	
 	public function admin_menu () {
-		add_options_page( 'NonvernBlaster:hover Settings', 'NonvernBlaster:hover', 'manage_options', 'nbh', array( $this, 'plugin_options' ) );
+		add_options_page( 'NonvernBlaster:hover Settings', 'NonvernBlaster:hover', 'manage_options', 'nbh', array( &$this, 'plugin_options' ) );
 	}
 	
 	public function admin_enqueue_scripts ( $hook ) {
@@ -330,7 +330,6 @@ class NonverBlaster_Hover {
 		<div class="wrap options-nbh">
 			<div id="icon-options-general" class="icon32"><br></div>
 			<h2><?php _e('NonvernBlaster<span style="font-style:italic;font-weight:lighter">:hover</span> Settings'); ?></h2>
-			
 			<form action="" method="post">
 				<input type="hidden" name="option_page" value="nbh">
 				<input type="hidden" name="action" value="update">
@@ -354,7 +353,6 @@ class NonverBlaster_Hover {
 						</tr>
 					</tbody>
 				</table>
-				
 				<h3><?php _e('Player sizes'); ?></h3>
 				<table class="form-table">
 					<tbody>
@@ -378,7 +376,6 @@ class NonverBlaster_Hover {
 						</tr>
 					</tbody>
 				</table>
-				
 				<h3><?php _e('Player options'); ?></h3>
 				<table class="form-table">
 					<tbody>
@@ -390,7 +387,6 @@ class NonverBlaster_Hover {
 						</tr>
 					</tbody>
 				</table>
-						
 				<p class="submit"><input type="submit" name="submit" id="submit" class="button-primary" value="<?php _e('Save Changes'); ?>"></p>
 			</form>
 		</div>
