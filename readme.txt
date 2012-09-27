@@ -3,7 +3,7 @@ Contributors: jacobbuck
 Tags: video, audio, flash, player
 Requires at least: 3.1
 Tested up to: 3.4.1
-Stable tag: 1.4.3
+Stable tag: 1.4.4
 License: MIT
 License URI: http://opensource.org/licenses/MIT
 
@@ -20,6 +20,9 @@ Play video and audio files using the [NonverBlaster:hover](http://www.nonverbla.
 3. Insert button in Add Media
 
 == Changelog ==
+
+= 1.4.4 =
+* Fixed a bug where 'Poster Image URL' and 'HD Video URL' weren't saving
 
 = 1.4.3 =
 * Fixed a bug where options weren't saving

@@ -36,7 +36,7 @@ class NonverBlaster_Hover {
 		
 		// Filters
 		add_filter( 'attachment_fields_to_edit', array( &$this, 'add_attachment_fields' ), 10, 2 );
-		add_filter( 'save_attachment_fields', array( &$this, 'save_attachment_fields' ), 10, 2 );
+		add_filter( 'attachment_fields_to_save', array( &$this, 'save_attachment_fields' ), 10, 2 );
 		add_filter( 'media_send_to_editor', array( &$this, 'send_shortcode_to_editor' ), 10, 3 );
 		add_filter( 'plugin_action_links', array( &$this, 'add_settings_link' ), 10, 2 );
 		
