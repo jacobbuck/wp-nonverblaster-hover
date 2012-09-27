@@ -14,7 +14,6 @@ class NonverBlaster_Hover {
 	);
 	private $fallback_width;
 	private $fallback_height;
-	private $version = '1.4.2';
 	
 	/* Let's do this thang! */
 	public function __construct () {
@@ -148,12 +147,12 @@ class NonverBlaster_Hover {
 		$player_swf = plugins_url( 'NonverBlaster.swf', __FILE__ );
 		
 		extract( shortcode_atts( array(
-			'id' => 0,
-			'src' => '',
-			'title' => '',
+			'id'       => 0,
+			'src'      => '',
+			'title'    => '',
 			'autoplay' => false,
-			'loop' => false,
-			'width' => $this->options['audio_width']
+			'loop'     => false,
+			'width'    => $this->options['audio_width']
 		), $atts ) );
 				
 		$attachment = get_post( $id );
@@ -194,13 +193,14 @@ class NonverBlaster_Hover {
 		$player_swf = plugins_url( 'NonverBlaster.swf', __FILE__ );
 		
 		extract( shortcode_atts ( array(
-			'id' => false,
-			'src' => '',
-			'title' => '',
+			'id'       => false,
+			'src'      => '',
+			'title'    => '',
 			'autoplay' => false,
-			'loop' => false,
-			'width' => $this->fallback_width,
-			'height' => $this->fallback_height
+			'loop'     => false,
+			'poster'   => '',
+			'width'    => $this->fallback_width,
+			'height'   => $this->fallback_height
 		), $atts ) );
 		
 		$attachment = get_post( $id );
@@ -208,7 +208,7 @@ class NonverBlaster_Hover {
 		if ( ! empty( $id ) && ! empty( $attachment ) ) {
 			$src = wp_get_attachment_url( $attachment->ID );
 			$title = apply_filters( 'the_title', $attachment->post_title );
-			$poster = get_post_meta( $attachment->ID, '_nbh_poster', true );
+			$poster = $poster ? $poster : get_post_meta( $attachment->ID, '_nbh_poster', true );
 			$hd_src = get_post_meta( $attachment->ID, '_nbh_hd', true );
 		} elseif ( empty( $src ) )
 			return;
@@ -273,7 +273,7 @@ class NonverBlaster_Hover {
 		
 		// Revert Empty Options To Default 
 		foreach ( (array) array( 'control_color', 'control_back_color', 'audio_width', 'video_width', 'video_height' ) as $name )
-			$options[ $name ] = empty( $options[ $name ] ) ? $options[ $name ] : $this->default_options[ $name ];
+			$options[ $name ] = empty( $options[ $name ] ) ? $this->default_options[ $name ] : $options[ $name ] ;
 		
 		// Update Option
 		update_option( 'nbh_options', $options );
